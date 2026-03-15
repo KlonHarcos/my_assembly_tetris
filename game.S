@@ -33,18 +33,13 @@
 
 ############ TWEAK ME ########
 .equ MAX_SPEED,       1200000
-.equ SPEED_INCREMENT,     100
+.equ SPEED_INCREMENT,     10000
 .equ BASE_GAME_SPEED, 3000000
 .equ COYOTE_TIME,     1000000
 ##############################
 
 .bss
 # [unitialized static variables]
-time_at_last_call:
-    .skip 16
-curr_time:
-    .skip 16
-
 ghost_grid:
     .skip GRID_SIZE
 kernel_pointer:
@@ -58,10 +53,6 @@ game_speed:
 high_score:
     .skip 8
 current_score:
-    .skip 8
-main_win_pointer:
-    .skip 8
-storage_win_pointer:
     .skip 8
 
 .data
@@ -129,9 +120,6 @@ game_run:
     movq %rsp, %rbp
     subq $16, %rsp
 
-    //call init_windows
-
-
     call game_setup
 
    
@@ -148,12 +136,11 @@ game_run:
     addq %rax, tick_counter(%rip)
 
     call game_loop
-    //cmpb $1, %al
-    //je loop_exit
+    
 
 
     # sleep for tick_speed time
-    leaq tick_speed(%rip), %rdi    #the time structure we just pushed
+    leaq tick_speed(%rip), %rdi 
     mov   $35, %eax  
     xor   %esi, %esi
     syscall
@@ -271,16 +258,16 @@ game_loop:
     
     call handle_input
     
-    
-    #call print grid if theres a change
+
     call print_grid
+    
     call print_storage
 
     call print_score
 
     call refresh
 
-    //call debug_print
+    #call debug_print
     
     
 
@@ -303,11 +290,13 @@ print_grid:
     ## uncomment to hide buffer rows:
     movq $HIDDEN_GRID_SIZE, -16(%rbp)
     incq -16(%rbp)
-    //movq $0, -16(%rbp)
     print_loop:
         cmpq $GRID_SIZE, -16(%rbp)
         je print_loop_exit
 
+        
+        
+        ###############load base color print begining line###############
         movq stdscr(%rip), %rdi
         movq $0x0100, %rsi
         xorq %rax, %rax
@@ -317,7 +306,6 @@ print_grid:
         xorq %rax, %rax
         call wprintw
 
-        //movq $0, -8(%rbp)
         print_loop_inner:
             leaq grid(%rip), %rsi
             xorq %rdi, %rdi
@@ -344,31 +332,26 @@ print_grid:
             movq stdscr(%rip), %rdi
             call wattron
 
-            #### PRINTS COLORED STRING ###
-            ###DEBUG CODE###################
-            leaq grid(%rip), %rsi           #
-            xorq %rdi, %rdi                 #
-            movq -16(%rbp), %rcx            #
-            leaq (%rsi, %rcx), %rax         #
-            cmpq kernel_pointer(%rip), %rax #
-            movq stdscr(%rip), %rdi
-            leaq point_string(%rip), %rsi
-            je debug_jmp                    #
-            ################################
+            //#### PRINTS COLORED STRING ###
+            //###DEBUG CODE###################
+            //leaq grid(%rip), %rsi           #
+            //xorq %rdi, %rdi                 #
+            //movq -16(%rbp), %rcx            #
+            //leaq (%rsi, %rcx), %rax         #
+            //cmpq kernel_pointer(%rip), %rax #
+            //movq stdscr(%rip), %rdi
+            //leaq point_string(%rip), %rsi
+            //je debug_jmp                    #
+            //################################
              
             movq stdscr(%rip), %rdi
             leaq print_string(%rip), %rsi
-            debug_jmp:
+            //debug_jmp:
             xorq %rax, %rax
             call wprintw
 
-            #### TURN COLOR OFF
-            //incq %rsi
-            //shl $8, %rsi
-            //movq stdscr(%rip), %rdi
-            //call wattroff
             print_loop_guard_next:
-            //incq -8(%rbp)
+            
             incq -16(%rbp)
             jmp print_loop_inner
         print_loop_inner_exit:
@@ -393,14 +376,7 @@ print_grid:
     xorq %rax, %rax
     call wprintw
     
-    //movq stdscr(%rip), %rdi
-    //call wrefresh
-
-    /*
-    movq kernel_pointer(%rip), %rax
-    movb -24(%rbp), %cl
-    movb %cl, (%rax)
-    */
+    
     xorq %rax, %rax
     movq %rbp, %rsp
     popq %rbp
@@ -413,20 +389,16 @@ print_grid:
 drop_tile:
     pushq %rbp
     movq %rsp, %rbp
-    # subq $32, %rsp
 
    
 
     #### check for falling pieces in the bottom row ####
     call check_sticky
 
-    //call init_ghost
-    //leaq ghost_grid(%rip), %r9
     leaq grid(%rip), %r9
     addq $GRID_SIZE, %r9
     decq %r9
 
-    //leaq ghost_grid(%rip), %rdx
     leaq grid(%rip), %rdx
     addq $9, %rdx # dont check in first row
     drop_loop:
@@ -830,7 +802,6 @@ collapse_board:
     leaq grid(%rip), %r8
     addq $GRID_SIZE, %r8
     subq $real_line_len, %r8
-    //decq %r8
     l4:
     leaq grid(%rip), %rax
     cmpq %rax, %r8
@@ -1496,14 +1467,12 @@ debug_print:
 
     call erase
 
-    
     movq $0, -16(%rbp)
     debug_print_loop:
         cmpq $GRID_SIZE, -16(%rbp)
         movq -16(%rbp), %rax
         je debug_print_loop_exit
 
-        //movq $0, -8(%rbp)
         debug_print_loop_inner:
             leaq grid(%rip), %rsi
             xorq %rdi, %rdi
@@ -1525,25 +1494,6 @@ debug_print:
             movq %rdi, %rdx
             addq $0x30, %rdx
 
-
-            /*#### TURNS COLOR ON ####
-            incq %rsi
-            shl $8, %rsi
-            movq stdscr(%rip), %rdi
-            call wattron*/
-
-            /*#### PRINTS COLORED STRING ###
-            ###DEBUG CODE###################
-            leaq grid(%rip), %rsi           #
-            xorq %rdi, %rdi                 #
-            movq -16(%rbp), %rcx            #
-            leaq (%rsi, %rcx), %rax         #
-            cmpq kernel_pointer(%rip), %rax #
-            movq stdscr(%rip), %rdi
-            leaq point_string(%rip), %rsi
-            je debug_debug_jmp                    #
-            ################################*/
-             
             movq stdscr(%rip), %rdi
             leaq dummy_print_string(%rip), %rsi
 
@@ -1551,13 +1501,7 @@ debug_print:
             xorq %rax, %rax
             call wprintw
 
-            /*#### TURN COLOR OFF
-            //incq %rsi
-            //shl $8, %rsi
-            movq stdscr(%rip), %rdi
-            call wattroff*/
             debug_print_loop_guard_next:
-            //incq -8(%rbp)
             incq -16(%rbp)
             jmp debug_print_loop_inner
         debug_print_loop_inner_exit:
@@ -1647,9 +1591,6 @@ print_storage:
     pushq %rbp
     movq %rsp, %rbp
     subq $32, %rsp
-
-    //call erase
-
 
     cmpb $-1, tile_storage(%rip)
     je s_load_EMPTY
@@ -1761,9 +1702,6 @@ print_storage:
             leaq print_string(%rip), %rsi
             xorq %rax, %rax
             call wprintw
-            #### TURN COLOR OFF
-            //movq stdscr(%rip), %rdi
-            //call wattroff
 
             storage_print_loop_guard_next:
             incq -16(%rbp)
@@ -1786,9 +1724,6 @@ print_storage:
 
         jmp storage_print_loop
     storage_print_loop_exit:
-    
-    //movq stdscr(%rip), %rdi
-    //call wrefresh
 
     print_storage_ep:
     xorq %rax, %rax
@@ -1808,57 +1743,6 @@ print_score:
     movq high_score(%rip), %rcx
     xorq %rax, %rax
     call wprintw
-
-    xorq %rax, %rax
-    movq %rbp, %rsp
-    popq %rbp
-ret
-
-
-init_windows:
-    pushq %rbp
-    movq %rsp, %rbp
-    subq $16, %rsp
-
-    
-    ## calculate center is x position
-    movq stdscr(%rip), %rdi
-    call getmaxx
-    
-    xorq %rdx, %rdx
-    movq $2, %rcx
-    idivq %rcx
-    subq $15, %rax
-    movq %rax, -8(%rbp)
-
-    ## calculate center is x position
-    movq stdscr(%rip), %rdi
-    call getmaxy
-    
-    xorq %rdx, %rdx
-    movq $2, %rcx
-    idivq %rcx
-    subq $10, %rax
-    movq %rax, -16(%rbp)
-
-    
-    movq  $22, %rdi # num lines
-    movq  $22, %rsi # num cols
-    movq -8(%rbp), %rdx # y begin
-    movq -8(%rbp), %rcx # x begin
-    call newwin
-    movq %rax, main_win_pointer(%rip)
-
-    
-    
-    movq  $19, %rdi # num lines
-    movq  $6, %rsi # num cols
-    movq -8(%rbp), %rdx # y begin
-    movq -8(%rbp), %rcx # x begin
-    addq $23, %rcx
-    call newwin
-    movq %rax, storage_win_pointer(%rip)
-
 
     xorq %rax, %rax
     movq %rbp, %rsp
