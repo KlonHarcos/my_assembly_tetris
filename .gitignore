@@ -3,4 +3,5 @@
 .build
 .idea
 .clang-format
-.vscode
+/build
+.cmake
