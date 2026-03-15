@@ -1,5 +1,7 @@
 # TETRISSEMBLY
 
+this project was developed for linux terminal therefore a WSL or linux is required (probably no MACOS)
+
 ## CONTROLS:
 - left arrow: move tile to the left
 - right arrow: move tile to the right
