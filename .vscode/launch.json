@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Tetris",
+      "type": "lldb",
+      "env": {
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "TERM": "xterm-256color"
+      },
+      "request": "launch",
+      "program": "tetris",
+      
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "preLaunchTask": "Build Tetris"
+    }
+  ]
+}
