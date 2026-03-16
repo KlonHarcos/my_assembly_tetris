@@ -1,6 +1,15 @@
 # TETRISSEMBLY
+terminal based tetris in assembly, using Ncurses
 
-this project was developed for linux terminal therefore a WSL or linux is required (probably no MACOS)
+
+
+## REQUIREMENTS:
+- some sort of linux terminal (the simpler the better, i only tested on wsl and standard linux mint)
+- clang
+    sudo apt install clang
+- Ncurses 
+    sudo apt-get install libncurses5-dev
+
 
 ## CONTROLS:
 - left arrow: move tile to the left

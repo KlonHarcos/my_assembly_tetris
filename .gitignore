@@ -4,3 +4,4 @@
 .idea
 .clang-format
 build
+./.vscode
