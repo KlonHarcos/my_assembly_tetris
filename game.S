@@ -32,9 +32,9 @@
 
 
 ############ TWEAK ME ########
-.equ MAX_SPEED,       1200000
-.equ SPEED_INCREMENT,     10000
-.equ BASE_GAME_SPEED, 3000000
+.equ MAX_SPEED,        800000
+.equ SPEED_INCREMENT,   30000
+.equ BASE_GAME_SPEED, 2000000
 .equ COYOTE_TIME,     1000000
 ##############################
 
@@ -241,7 +241,8 @@ game_setup:
     call clear_grid
     
     
-    xorq %rdi, %rdi
+    //xorq %rdi, %rdi
+    movq $7, %rdi
     call load_tile
 
     
@@ -332,21 +333,21 @@ print_grid:
             movq stdscr(%rip), %rdi
             call wattron
 
-            //#### PRINTS COLORED STRING ###
-            //###DEBUG CODE###################
-            //leaq grid(%rip), %rsi           #
-            //xorq %rdi, %rdi                 #
-            //movq -16(%rbp), %rcx            #
-            //leaq (%rsi, %rcx), %rax         #
-            //cmpq kernel_pointer(%rip), %rax #
-            //movq stdscr(%rip), %rdi
-            //leaq point_string(%rip), %rsi
-            //je debug_jmp                    #
-            //################################
+            #### PRINTS COLORED STRING ###
+            ###DEBUG CODE###################
+            leaq grid(%rip), %rsi           #
+            xorq %rdi, %rdi                 #
+            movq -16(%rbp), %rcx            #
+            leaq (%rsi, %rcx), %rax         #
+            cmpq kernel_pointer(%rip), %rax #
+            movq stdscr(%rip), %rdi
+            leaq point_string(%rip), %rsi
+            je debug_jmp                    #
+            ################################
              
             movq stdscr(%rip), %rdi
             leaq print_string(%rip), %rsi
-            //debug_jmp:
+            debug_jmp:
             xorq %rax, %rax
             call wprintw
 
@@ -778,7 +779,7 @@ tetris:
         call collapse_board
         call anim
 
-        call increase_speed
+        //call increase_speed
     l3_next:
     addq $real_line_len, -8(%rbp)
     jmp l3
@@ -1266,8 +1267,6 @@ rotate_tile_func:
     movq %r8, -8(%rbp)
     #############
 
-    
-
 
 
     
@@ -1277,6 +1276,7 @@ rotate_tile_func:
     testq %rax, %rax
     jnz placement_success
 
+    
     movq -8(%rbp), %rdi
     incq %rdi
     pushq %rdi
@@ -1285,11 +1285,28 @@ rotate_tile_func:
     jnz placement_success
 
     movq -8(%rbp), %rdi
+    incq %rdi
+    incq %rdi
+    pushq %rdi
+    call check_for_fit
+    testq %rax, %rax
+    jnz placement_success
+    
+    movq -8(%rbp), %rdi
     decq %rdi
     pushq %rdi
     call check_for_fit
     testq %rax, %rax
     jnz placement_success
+
+    movq -8(%rbp), %rdi
+    decq %rdi
+    decq %rdi
+    pushq %rdi
+    call check_for_fit
+    testq %rax, %rax
+    jnz placement_success
+
 
     
     movq -8(%rbp), %rax
@@ -1314,6 +1331,7 @@ rotate_tile_func:
     call check_for_fit
     testq %rax, %rax
     jnz placement_success
+    
 
     jmp rotate_tile_ep
 
@@ -1327,7 +1345,18 @@ rotate_tile_func:
         movq 24(%rcx), %rbx
         */
         popq %rax
-        movq -8(%rbp), %r11
+        
+        #shift kernel pointer to new position
+        movq %rax, %rdx
+        
+        leaq ghost_grid(%rip), %r8
+        subq %r8, %rdx
+        
+        leaq grid(%rip), %r8
+        addq %r8, %rdx
+        movq %rdx, kernel_pointer(%rip)
+        
+        //movq -8(%rbp), %r11
         movq %rax, -8(%rbp)
 
         movq (%rcx), %rax
