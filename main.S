@@ -43,21 +43,21 @@ pushq %rbp
 movq %rsp, %rbp
 subq $16, %rsp
 
-call initscr           // init screen
-call start_color        // enable colours
-call noecho             // don't display keypresses
-call cbreak
+	call initscr           // init screen
+	call start_color        // enable colours
+	call noecho             // don't display keypresses
+	call cbreak
 
-movq stdscr(%rip), %rdi
-movq $1, %rsi
-call nodelay
+	movq stdscr(%rip), %rdi
+	movq $1, %rsi
+	call nodelay
 
-movq stdscr(%rip), %rdi
-movq $1, %rsi
-call keypad
+	movq stdscr(%rip), %rdi
+	movq $1, %rsi
+	call keypad
 
-movb $1, %dil
-call curs_set
+	movq $0, %rdi
+	call curs_set
 
 call refresh
 

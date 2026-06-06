@@ -101,6 +101,8 @@ current_score:
         .asciz "OO"
     dummy_print_string:
         .asciz "%c"
+    dummy_endl_string:
+        .asciz "%c\n"
     game_over_text:
         .asciz "GAME OVER press R to try again"
     paused_text:
@@ -216,7 +218,7 @@ game_run:
     xorq %rax, %rax
     movq %rbp, %rsp
     popq %rbp
-    ret
+ret
 
 game_setup:
 
@@ -249,7 +251,7 @@ game_setup:
     xorq %rax, %rax
     movq %rbp, %rsp
     popq %rbp
-    ret
+ret
 
 
 game_loop:
@@ -266,9 +268,10 @@ game_loop:
 
     call print_score
 
+    //call debug_print
+
     call refresh
 
-    #call debug_print
     
     
 
@@ -278,7 +281,7 @@ game_loop:
     xorq %rax, %rax
     movq %rbp, %rsp
     popq %rbp
-    ret
+ret
 
 print_grid:
     pushq %rbp
@@ -335,14 +338,14 @@ print_grid:
 
             #### PRINTS COLORED STRING ###
             ###DEBUG CODE###################
-            leaq grid(%rip), %rsi           #
-            xorq %rdi, %rdi                 #
-            movq -16(%rbp), %rcx            #
-            leaq (%rsi, %rcx), %rax         #
-            cmpq kernel_pointer(%rip), %rax #
-            movq stdscr(%rip), %rdi
-            leaq point_string(%rip), %rsi
-            je debug_jmp                    #
+            //leaq grid(%rip), %rsi           #
+            //xorq %rdi, %rdi                 #
+            //movq -16(%rbp), %rcx            #
+            //leaq (%rsi, %rcx), %rax         #
+            //cmpq kernel_pointer(%rip), %rax #
+            //movq stdscr(%rip), %rdi
+            //leaq point_string(%rip), %rsi
+            //je debug_jmp                    #
             ################################
              
             movq stdscr(%rip), %rdi
@@ -381,7 +384,7 @@ print_grid:
     xorq %rax, %rax
     movq %rbp, %rsp
     popq %rbp
-    ret
+ret
 
 
 
@@ -527,9 +530,6 @@ check_sticky:
     movq %rbp, %rsp
     popq %rbp
 ret
-
-
-
 
 handle_input:
     pushq %rbp
@@ -1494,7 +1494,7 @@ debug_print:
     movq %rsp, %rbp
     subq $32, %rsp
 
-    call erase
+    //call erase
 
     movq $0, -16(%rbp)
     debug_print_loop:
@@ -1511,8 +1511,8 @@ debug_print:
             cmpb $C_RIGHT_GUARD, %dil
             je debug_print_loop_inner_exit
 
-            cmpb $C_LEFT_GUARD, %dil
-            je debug_print_loop_guard_next
+            //cmpb $C_LEFT_GUARD, %dil
+            //je debug_print_loop_guard_next
 
             cmpb $C_FALLING, %dil
             jne debug_assign_as_is
@@ -1536,7 +1536,8 @@ debug_print:
         debug_print_loop_inner_exit:
         incq -16(%rbp)
         movq stdscr(%rip), %rdi
-        leaq endl_string(%rip), %rsi
+        leaq dummy_endl_string(%rip), %rsi
+        movq $57, %rdx
         xorq %rax, %rax
         call wprintw
 
@@ -1548,7 +1549,7 @@ debug_print:
     xorq %rax, %rax
     movq %rbp, %rsp
     popq %rbp
-    ret
+ret
 
 
 clear_falling:
