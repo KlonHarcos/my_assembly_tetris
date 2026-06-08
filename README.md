@@ -1,6 +1,7 @@
 # TETRISSEMBLY
 terminal based tetris in assembly, using Ncurses
 
+Watch a demo here on youtube:
 [![DEMO video](https://img.youtube.com/vi/fO8L9FKxaGk/0.jpg)](https://youtu.be/fO8L9FKxaGk)
 
 
